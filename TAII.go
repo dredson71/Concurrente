@@ -2,16 +2,18 @@ package main
 
 import (
 	"bufio"
-	"encoding/csv"
 	"fmt"
 	"log"
 	"math"
+	"math/rand"
 	"os"
 	"strconv"
 	"strings"
 )
 
-func ReadFile2(file string) {
+func ReadFile2(file string, begin int, end int, y1 int, y2 int, y3 int, y4 int, y5 int) ([]float64, []int) {
+	distance := make([]float64, 0)
+	team := make([]int, 0)
 	f, err := os.Open(file)
 	if err != nil {
 		log.Fatalf("Cannot open '%s': %s\n", file, err.Error())
@@ -21,58 +23,55 @@ func ReadFile2(file string) {
 	scanner := bufio.NewScanner(f)
 	for scanner.Scan() {
 		n++
-		if n < 2 {
+		if n < begin {
 			continue
 		}
-		if n > 4 {
+		if n > end {
 			break
 		}
 		res1 := strings.Split(scanner.Text(), ",")
-		x1, _ := strconv.Atoi(strings.Replace(res1[0], " ", "", -1))
-		x2, _ := strconv.Atoi(strings.Replace(res1[1], " ", "", -1))
-		x3, _ := strconv.Atoi(strings.Replace(res1[2], " ", "", -1))
-		x4, _ := strconv.Atoi(strings.Replace(res1[3], " ", "", -1))
-		x5, _ := strconv.Atoi(strings.Replace(res1[4], " ", "", -1))
-		println(x1)
-		println(x2)
-		println(x3)
-		println(x4)
-		println(x5)
-
+		x1, _ := strconv.Atoi(strings.Replace(res1[0], "?", "0", -1))
+		x2, _ := strconv.Atoi(strings.Replace(res1[1], "?", "0", -1))
+		x3, _ := strconv.Atoi(strings.Replace(res1[2], "?", "0", -1))
+		x4, _ := strconv.Atoi(strings.Replace(res1[3], "?", "0", -1))
+		x5, _ := strconv.Atoi(strings.Replace(res1[4], "?", "0", -1))
+		x6, _ := strconv.Atoi(strings.Replace(res1[5], "?", "0", -1))
+		distanciaP := distanciaEuclidiana(x1, x2, x3, x4, x5, y1, y2, y3, y4, y5)
+		distance = append(distance, distanciaP)
+		team = append(team, x6)
 	}
+	fmt.Println(distance)
+	fmt.Println(team)
+	return (distance), team
 }
 
-func ReadFile(file string) [][]string {
-	f, err := os.Open(file)
-	if err != nil {
-		log.Fatalf("Cannot open '%s': %s\n", file, err.Error())
+func quicksort(a []float64, team []int) ([]float64, []int) {
+	if len(a) < 2 {
+		return a, team
 	}
-	defer f.Close()
-	r := csv.NewReader(f)
-	r.Comma = ','
-	rows, err := r.ReadAll()
-	if err != nil {
-		log.Fatalln("Cannot read CSV data:", err.Error())
-	}
-	return rows
-}
 
-func calculateDistance(rows [][]string, y1 int, y2 int, y3 int, y4 int, y5 int) {
-	distance := make([]float64, 0)
-	for i := range rows {
-		if i != 0 {
-			x1, _ := strconv.Atoi(strings.Replace(rows[i][0], " ", "", -1))
-			x2, _ := strconv.Atoi(strings.Replace(rows[i][1], " ", "", -1))
-			x3, _ := strconv.Atoi(strings.Replace(rows[i][2], " ", "", -1))
-			x4, _ := strconv.Atoi(strings.Replace(rows[i][3], " ", "", -1))
-			x5, _ := strconv.Atoi(strings.Replace(rows[i][4], " ", "", -1))
-			distanciaP := distanciaEuclidiana(x1, x2, x3, x4, x5, y1, y2, y3, y4, y5)
-			i++
-			distance = append(distance, distanciaP)
+	left, right := 0, len(a)-1
+
+	pivot := rand.Int() % len(a)
+
+	a[pivot], a[right] = a[right], a[pivot]
+	team[pivot], team[right] = team[right], team[pivot]
+
+	for i, _ := range a {
+		if a[i] < a[right] {
+			a[left], a[i] = a[i], a[left]
+			team[left], team[i] = team[i], team[left]
+			left++
 		}
 	}
-	fmt.Println(distance[0])
 
+	a[left], a[right] = a[right], a[left]
+	team[left], team[right] = team[right], team[left]
+
+	quicksort(a[:left], team[:left])
+	quicksort(a[left+1:], team[left+1:])
+
+	return a, team
 }
 
 func distanciaEuclidiana(x1 int, x2 int, x3 int, x4 int, x5 int, y1 int, y2 int, y3 int, y4 int, y5 int) float64 {
@@ -83,8 +82,9 @@ func distanciaEuclidiana(x1 int, x2 int, x3 int, x4 int, x5 int, y1 int, y2 int,
 }
 
 func main() {
-	/*	rows := ReadFile("prueba.csv")
-		calculateDistance(rows, 8, 2, 0, 0, 0)*/
-	ReadFile2("prueba.csv")
+	slice, team := ReadFile2("mammographic_masses.csv", 1, 8, 8, 2, 0, 0, 0)
+	quicksort(slice, team)
+	fmt.Println(slice)
+	fmt.Println(team)
 
 }
