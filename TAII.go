@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"encoding/csv"
 	"fmt"
 	"log"
@@ -9,6 +10,37 @@ import (
 	"strconv"
 	"strings"
 )
+
+func ReadFile2(file string) {
+	f, err := os.Open(file)
+	if err != nil {
+		log.Fatalf("Cannot open '%s': %s\n", file, err.Error())
+	}
+	defer f.Close()
+	n := 0
+	scanner := bufio.NewScanner(f)
+	for scanner.Scan() {
+		n++
+		if n < 2 {
+			continue
+		}
+		if n > 4 {
+			break
+		}
+		res1 := strings.Split(scanner.Text(), ",")
+		x1, _ := strconv.Atoi(strings.Replace(res1[0], " ", "", -1))
+		x2, _ := strconv.Atoi(strings.Replace(res1[1], " ", "", -1))
+		x3, _ := strconv.Atoi(strings.Replace(res1[2], " ", "", -1))
+		x4, _ := strconv.Atoi(strings.Replace(res1[3], " ", "", -1))
+		x5, _ := strconv.Atoi(strings.Replace(res1[4], " ", "", -1))
+		println(x1)
+		println(x2)
+		println(x3)
+		println(x4)
+		println(x5)
+
+	}
+}
 
 func ReadFile(file string) [][]string {
 	f, err := os.Open(file)
@@ -51,7 +83,8 @@ func distanciaEuclidiana(x1 int, x2 int, x3 int, x4 int, x5 int, y1 int, y2 int,
 }
 
 func main() {
-	rows := ReadFile("prueba.csv")
-	calculateDistance(rows, 8, 2, 0, 0, 0)
+	/*	rows := ReadFile("prueba.csv")
+		calculateDistance(rows, 8, 2, 0, 0, 0)*/
+	ReadFile2("prueba.csv")
 
 }
