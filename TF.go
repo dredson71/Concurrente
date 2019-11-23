@@ -23,6 +23,8 @@ var sendvar = 1
 var cantLines = 748
 var myip = ""
 
+var sendPoss = false
+
 type Block struct {
 	Index     int
 	Timestamp string
@@ -208,6 +210,52 @@ func registerServer(hostAddr string) {
 		go handleRegister(conn)
 	}
 }
+
+func conServer(hostAddr string) {
+	host := fmt.Sprintf("%s:8005", hostAddr)
+	ln, _ := net.Listen("tcp", host)
+	defer ln.Close()
+	for {
+		conn, _ := ln.Accept()
+		go handleConsS(conn)
+	}
+}
+
+func checkValid(a, Block Block) {
+	if a == Block {
+		sendPoss = true
+	}
+}
+
+func handleConsS(conn net.Conn) {
+	defer conn.Close()
+	r := bufio.NewReader(conn)
+	strNum, _ := r.ReadString('\n')
+	res1 := strings.Split(strNum, "*")
+	index, _ := strconv.Atoi(res1[0])
+	timestamp := res1[1]
+	data := res1[2]
+	hash := res1[3]
+	prevhash := res1[4]
+	BlockReceived := Block{index, timestamp, data, hash, prevhash}
+
+	a := Blockchain[len(Blockchain)-1]
+	checkValid(BlockReceived, a)
+
+}
+
+func consSend(num string, ip string) {
+	idx := rand.Intn(len(addrs))
+	fmt.Println(idx)
+	blockTempString := strconv.Itoa(blocktemporal.Index) + "*" + blocktemporal.Timestamp + "*" + num + "*" + blocktemporal.Hash + "*" + blocktemporal.PrevHash + "*" + ip
+	fmt.Println(blockTempString)
+	remote := fmt.Sprintf("%s:8002", addrs[idx])
+	conn, _ := net.Dial("tcp", remote)
+	defer conn.Close()
+	fmt.Fprintln(conn, blockTempString)
+	sendvar = -1
+}
+
 func handleRegister(conn net.Conn) {
 	defer conn.Close()
 
